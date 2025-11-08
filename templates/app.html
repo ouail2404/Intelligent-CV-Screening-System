@@ -1,283 +1,314 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resume Analyzer</title>
-    <style>
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --accent-color: #e74c3c;
-            --background-color: #f5f6fa;
-            --text-color: #2c3e50;
-            --success-color: #2ecc71;
-        }
+  <meta charset="UTF-8" />
+  <title>CV Matching (Any Role/JD) — Snapshot → Compare</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-        }
+    :root {
+      --bg: #f8fbff; --card: #ffffff; --text: #0a1e3a; --muted: #5b6b82; --line: #e7eef7; --chip: #f1f6fd;
+      --brand: #0b5ed7; --ok: #178b50; --bad: #d12d2d; --slate: #5c6f88; --ring: 0 0 0 3px rgba(11,94,215,.18);
+      --shadow: 0 8px 26px rgba(20,50,80,.08); --gaugeTrack: #e7eef7; --gaugeFill: #1e9e67;
+    }
+    * { box-sizing: border-box; } html, body { height: 100%; }
+    body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color:var(--text);
+      background: radial-gradient(1200px 700px at 15% -15%, rgba(11,94,215,.06), transparent 50%),
+                  radial-gradient(900px 600px at 115% 0%, rgba(30,158,103,.06), transparent 50%), var(--bg); }
+    .wrapper { max-width: 1100px; margin: 28px auto 48px; padding: 0 18px; }
 
-        .container {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 30px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+    .header { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(6px);
+      background: linear-gradient(to bottom, rgba(255,255,255,.9), rgba(255,255,255,.75));
+      border-bottom: 1px solid var(--line); padding: 12px 18px; }
+    .header h1 { margin:0; font-size: 20px; letter-spacing:.2px; font-weight:800; color:var(--brand); }
+    .subtitle { color: var(--muted); font-size: 14px; margin-top: 4px; }
 
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
+    .card { background: var(--card); border:1px solid var(--line); border-radius:16px; box-shadow: var(--shadow); }
+    .p { padding: 20px; }
 
-        .header h1 {
-            color: var(--primary-color);
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
+    .grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px; }
+    @media (max-width: 900px){ .grid{ grid-template-columns: 1fr; } }
 
-        .description {
-            color: #666;
-            font-size: 1.1em;
-            margin-bottom: 30px;
-            text-align: center;
-        }
+    textarea { min-height: 150px; width:100%; border:1px solid var(--line); background: #fff;
+      border-radius:14px; padding:12px 14px; color:var(--text); outline:none; box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
+      font-size: 14px; }
+    textarea:focus { border-color:#b9d3fa; box-shadow: var(--ring); }
 
-        .form-group {
-            margin-bottom: 25px;
-            width: 100%;
-        }
+    .drop { border:1.5px dashed var(--line); border-radius:14px; padding:14px; height:150px; display:flex; align-items:center; justify-content:center;
+      text-align:center; gap:10px; color:var(--muted); cursor:pointer; background: linear-gradient(180deg, #ffffff, #fbfdff); }
+    .drop.dragover { border-color:#b9d3fa; color:#0b5ed7; box-shadow: var(--ring); }
+    .filelist { margin-top:8px; display:flex; flex-wrap:wrap; gap:8px; }
+    .filepill { background:#eef4fe; border:1px solid #dbe7fb; color:#0a1e3a; border-radius:999px; padding:6px 10px; font-size:12px; }
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--primary-color);
-        }
+    .btn { appearance: none; background: linear-gradient(180deg, #0b5ed7, #0a57c8); color:#fff; border:none; padding:12px 16px; border-radius:12px;
+      font-weight:700; cursor:pointer; letter-spacing:.2px; box-shadow: 0 10px 18px rgba(11,94,215,.18), inset 0 1px 0 rgba(255,255,255,.2); }
+    .btn:hover { transform: translateY(-1px); } .btn:active { transform: translateY(0); }
 
-        textarea {
-            width: 100%;
-            height: 150px;
-            padding: 15px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: border-color 0.3s ease;
-            resize: none;
-            box-sizing: border-box;
-        }
+    .list { list-style:none; padding:0; margin:0; }
+    .row { border-bottom:1px solid var(--line); }
+    .row-head { display:flex; gap:16px; align-items:center; justify-content:space-between; padding:16px 0; cursor:pointer; }
+    .row-head:hover { opacity:.92; }
+    .left { min-width:0; flex:1 1 auto; }
+    .rowtitle { font-weight:800; font-size: 18px; margin:0; letter-spacing:.2px; }
+    .muted { color: var(--muted); }
 
-        textarea:focus {
-            border-color: var(--secondary-color);
-            outline: none;
-        }
+    .scorewrap { min-width: 120px; display:flex; align-items:center; justify-content:center; gap:10px; }
+    .fit { font-size:12px; font-weight:700; color:#1c2b45; }
 
-        .file-upload-container {
-            border: 2px dashed #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            background-color: #f9f9f9;
-            margin-bottom: 15px;
-            width: 100%;
-            box-sizing: border-box;
-        }
+    .gauge { --val: 0.0; width: 84px; height: 84px; border-radius: 50%;
+      background: conic-gradient(var(--gaugeFill) calc(var(--val) * 1%), var(--gaugeTrack) 0);
+      display:grid; place-items:center; border: 6px solid #ffffff; box-shadow: var(--shadow); }
+    .gauge > span { display:block; width: 66px; height:66px; border-radius:50%; background: #fff;
+      color:var(--text); display:grid; place-items:center; font-weight:800; box-shadow: inset 0 1px 0 rgba(10,30,58,.06); }
 
-        input[type="file"] {
-            width: 100%;
-            padding: 10px;
-            cursor: pointer;
-        }
+    .row-body { display:none; padding: 6px 0 18px; }
+    .row.open .row-body { display:block; }
 
-        .resume-list {
-            margin-top: 15px;
-        }
+    .badges { margin-top:8px; display:flex; flex-wrap:wrap; gap:8px; }
+    .badge { display:inline-flex; align-items:center; gap:7px; padding:6px 10px; border-radius:999px; border:1px solid var(--line);
+      font-size:12px; color:var(--text); background:var(--chip); }
+    .badge.ok { background: rgba(23,139,80,.10); border-color: rgba(23,139,80,.22); color: var(--ok); }
+    .badge.miss { background: rgba(209,45,45,.10); border-color: rgba(209,45,45,.22); color: var(--bad); }
+    .badge.extra { background: rgba(92,111,136,.10); border-color: rgba(92,111,136,.22); color: var(--slate); }
 
-        .resume-item {
-            background: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 5px;
-            border: 1px solid #eee;
-        }
+    details { margin-top:10px; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+    details > summary { padding:11px 12px; cursor:pointer; list-style:none; background:#fafcff; color:var(--text); font-weight:600; }
+    details[open] > summary{ border-bottom:1px solid var(--line); }
+    details > div { padding:12px; background: #fff; }
+    .key { color: var(--muted); }
 
-        button {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            background-color: var(--secondary-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
+    table { border-collapse: collapse; width: 100%; margin-top:10px; }
+    th, td { border: 1px solid var(--line); padding: 10px; text-align: left; font-size: 14px; }
+    th { background: #f5f9ff; color:#0a1e3a; }
 
-        button:hover {
-            background-color: #2980b9;
-        }
-
-        .results {
-            margin-top: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .results h3 {
-            color: var(--primary-color);
-            margin: 0;
-            padding: 20px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .result-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            border-bottom: 1px solid #eee;
-            transition: background-color 0.2s ease;
-        }
-
-        .result-item:last-child {
-            border-bottom: none;
-        }
-
-        .result-item:hover {
-            background-color: #f8f9fa;
-        }
-
-        .resume-name {
-            font-weight: 600;
-            color: var(--primary-color);
-        }
-
-        .score {
-            color: var(--success-color);
-            font-weight: 600;
-            padding: 4px 8px;
-            border-radius: 4px;
-            background-color: #e8f5e9;
-        }
-
-        .features {
-            margin-top: 40px;
-            padding: 20px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-        }
-
-        .features h3 {
-            color: var(--primary-color);
-            margin-bottom: 15px;
-        }
-
-        .features ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        .features li {
-            margin-bottom: 10px;
-            padding-left: 25px;
-            position: relative;
-        }
-
-        .features li:before {
-            content: "✓";
-            color: var(--secondary-color);
-            position: absolute;
-            left: 0;
-        }
-
-        .message {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .error {
-            background-color: #ffebee;
-            color: #c62828;
-        }
-
-        .success {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        form {
-            width: 100%;
-        }
-    </style>
+    .suggest { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+    .suggest .badge { border-style:dashed; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Resume Analyzer</h1>
-            <p class="description">
-                Upload multiple resumes and enter a job description to find the best matches. 
-                Our AI-powered system will analyze and rank resumes based on relevance.
-            </p>
-        </div>
 
-        <form action="/upload" method="post" enctype="multipart/form-data">
-            <div class="form-group">
-                <label for="jobDescription">Job Description:</label>
-                <textarea id="jobDescription" name="resumeText" placeholder="Enter the job description here..." required></textarea>
+  <div class="header">
+    <h1>Intelligent Cv Screening System </h1>
+    <div class="subtitle">Upload your Resumes and JD, and let us save you weeks of work </div>
+  </div>
+
+  <div class="wrapper">
+    <div class="card">
+      <div class="p">
+        <form id="cvform" action="/upload" method="POST" enctype="multipart/form-data">
+          <div class="grid">
+            <div>
+              <label for="resumeText" class="subtitle"><strong>Role or Job Description</strong></label>
+              <textarea id="resumeText" name="resumeText" placeholder="Paste a JD with MUST/NICE sections (or short role)…"></textarea>
             </div>
-            
-            <div class="form-group">
-                <label>Upload Resumes (PDF, DOCX, TXT):</label>
-                <div class="file-upload-container">
-                    <input type="file" name="resumeFile" accept=".pdf,.docx,.txt" multiple>
-                    <small>You can select up to 10 resumes at once</small>
+
+            <div>
+              <label class="subtitle"><strong>Upload CVs</strong> (PDF, DOCX, TXT)</label>
+              <label class="drop" id="dropzone">
+                <input id="resumeFile" name="resumeFile" type="file" multiple accept=".pdf,.docx,.txt" hidden />
+                <div>
+                  <div style="font-weight:700;color:#0a1e3a">Drag & drop CVs here</div>
+                  <div class="muted" style="font-size:13px">or click to choose files</div>
                 </div>
+              </label>
+              <div id="filelist" class="filelist" aria-live="polite"></div>
+              <div style="height:10px"></div>
+              <button type="submit" class="btn">Match CVs</button>
             </div>
-
-            <button type="submit">Analyze Resumes</button>
+          </div>
         </form>
 
         {% if message %}
-            <div class="message {% if top_r %}success{% else %}error{% endif %}">
-                {% if not top_r %}
-                    {{ message }}
-                {% endif %}
-                {% if top_r %}
-                    <div class="results" style="display: block;">
-                        <h3>Top Matching Resumes:</h3>
-                        {% for i in range(top_r|length) %}
-                            <div class="result-item">
-                                <div class="resume-name">{{ top_r[i] }}</div>
-                                <div class="score">Match Score: {{ "%.2f"|format(similarity_scores[i]) }}</div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
+          <div style="height:12px"></div>
+          <div class="subtitle"><strong>{{ message }}</strong></div>
         {% endif %}
 
-        <div class="features">
-            <h3>What our analyzer can do for you:</h3>
-            <ul>
-                <li>Match resumes with job descriptions using AI</li>
-                <li>Rank resumes based on relevance</li>
-                <li>Support multiple resume formats (PDF, DOCX, TXT)</li>
-                <li>Process up to 10 resumes simultaneously</li>
-                <li>Provide clear scoring and ranking</li>
-            </ul>
-        </div>
+        {% if top_rows %}
+          <div class="subtitle" style="margin-top:16px"><strong>Click a result to see details</strong></div>
+          <ul class="list">
+            {% for row in top_rows %}
+              <li class="row" id="{{ row.id }}">
+                <!-- HEAD: only name + gauge -->
+                <div class="row-head" role="button" tabindex="0" aria-expanded="false">
+                  <div class="left">
+                    <p class="rowtitle">{{ loop.index }}. {{ row.name }}</p>
+                  </div>
+                  <div class="scorewrap">
+                    <div class="gauge" style="--val: {{ '%.1f'|format(row.score * 100) }}">
+                      <span>{{ '%.0f'|format(row.score * 100) }}%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- BODY: hidden until clicked -->
+                <div class="row-body" aria-hidden="true">
+                  <div class="muted" style="margin-bottom:6px">
+                    <strong>{{ row.fit }}</strong> &nbsp;|&nbsp;
+                    JD requires ≥ {{ row.min_years or 0 }} yrs (CV: {{ row.years or 0 }} yrs)
+                  </div>
+
+                  <!-- suggestions -->
+                  <div style="margin-top:10px"><strong>Top suggestions to improve fit (MUST first):</strong></div>
+                  <div class="suggest">
+                    {% if row.suggestions %}
+                      {% for s in row.suggestions %}
+                        <span class="badge">{{ s }}</span>
+                      {% endfor %}
+                    {% else %}
+                      <span class="muted">No suggestions — already a strong match.</span>
+                    {% endif %}
+                  </div>
+
+                  <div style="margin-top:10px"><strong>Matched skills:</strong></div>
+                  <div class="badges">
+                    {% if row.matched_skills %}
+                      {% for s in row.matched_skills %}
+                        <span class="badge ok">{{ s }}</span>
+                      {% endfor %}
+                    {% else %}
+                      <span class="muted">No matched skills detected</span>
+                    {% endif %}
+                  </div>
+
+                  <details>
+                    <summary>View missing / extra skills</summary>
+                    <div>
+                      <div class="key">Missing MUST:</div>
+                      <div class="badges">
+                        {% if row.missing_must %}
+                          {% for s in row.missing_must %}
+                            <span class="badge miss">{{ s }}</span>
+                          {% endfor %}
+                        {% else %}
+                          <span class="badge miss">None</span>
+                        {% endif %}
+                      </div>
+
+                      <div style="height:6px"></div>
+                      <div class="key">Missing NICE:</div>
+                      <div class="badges">
+                        {% if row.missing_nice %}
+                          {% for s in row.missing_nice %}
+                            <span class="badge">{{ s }}</span>
+                          {% endfor %}
+                        {% else %}
+                          <span class="badge">None</span>
+                        {% endif %}
+                      </div>
+
+                      <div style="height:6px"></div>
+                      <div class="key">Extra (in CV, not required by JD):</div>
+                      <div class="badges">
+                        {% if row.extra_skills %}
+                          {% for s in row.extra_skills %}
+                            <span class="badge extra">{{ s }}</span>
+                          {% endfor %}
+                        {% else %}
+                          <span class="badge extra">None</span>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </details>
+
+                  <details>
+                    <summary>Score breakdown</summary>
+                    <div class="badges">
+                      <span class="badge"><span class="key">semantic:</span> {{ row.components.semantic }}</span>
+                      <span class="badge"><span class="key">overlap:</span> {{ row.components.skill_overlap }}</span>
+                      <span class="badge"><span class="key">experience:</span> {{ row.components.experience_score }}</span>
+                      <span class="badge"><span class="key">coverage (must-weighted):</span> {{ row.components.coverage }}</span>
+                      <span class="badge"><span class="key">must coverage:</span> {{ row.components.must_coverage }} ({{ row.components.must_counts }})</span>
+                      <span class="badge"><span class="key">nice coverage:</span>
+                        {% if row.components.nice_coverage is none %}N/A{% else %}{{ row.components.nice_coverage }} ({{ row.components.nice_counts }}){% endif %}
+                      </span>
+                    </div>
+                  </details>
+
+                  <details>
+                    <summary>Resume snapshot (parsed from CV)</summary>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Years</th>
+                          <th>Highest education</th>
+                          <th>All detected skills</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>{{ row.years or 0 }}</td>
+                          <td>{{ row.education or '—' }}</td>
+                          <td>
+                            {% if row.cv_skills %}
+                              {% for s in row.cv_skills %}
+                                <span class="badge">{{ s }}</span>
+                              {% endfor %}
+                            {% else %}
+                              <span class="muted">—</span>
+                            {% endif %}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </details>
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        {% if all_results %}
+          <div class="subtitle" style="margin-top:16px"><strong>All results (descending)</strong></div>
+          <ul class="list">
+            {% for row in all_results %}
+              <li class="row" style="display:flex; align-items:center; justify-content:space-between; padding:12px 0;">
+                <span>{{ row.filename }}</span>
+                <div class="gauge" style="--val: {{ '%.1f'|format(row.score * 100) }}"><span>{{ '%.0f'|format(row.score * 100) }}%</span></div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
     </div>
+  </div>
+
+  <script>
+    // Drag & drop with live file list
+    const drop = document.getElementById('dropzone');
+    const input = document.getElementById('resumeFile');
+    const list = document.getElementById('filelist');
+
+    function renderFiles(files){
+      list.innerHTML = '';
+      [...files].forEach(f=>{
+        const chip = document.createElement('span');
+        chip.className = 'filepill';
+        chip.textContent = f.name;
+        list.appendChild(chip);
+      });
+    }
+    drop.addEventListener('click', () => input.click());
+    drop.addEventListener('dragover', (e)=>{ e.preventDefault(); drop.classList.add('dragover'); });
+    drop.addEventListener('dragleave', ()=> drop.classList.remove('dragover'));
+    drop.addEventListener('drop', (e)=>{
+      e.preventDefault(); drop.classList.remove('dragover');
+      input.files = e.dataTransfer.files; renderFiles(input.files);
+    });
+    input.addEventListener('change', ()=> renderFiles(input.files));
+
+    // Row expand/collapse:
+    document.querySelectorAll('.row').forEach(row=>{
+      const head = row.querySelector('.row-head');
+      const body = row.querySelector('.row-body');
+      function toggle(){
+        const open = row.classList.toggle('open');
+        head.setAttribute('aria-expanded', open ? 'true' : 'false');
+        body.setAttribute('aria-hidden', open ? 'false' : 'true');
+      }
+      head?.addEventListener('click', toggle);
+      head?.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); toggle(); }});
+    });
+  </script>
 </body>
 </html>
-
